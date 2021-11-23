@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,19 +13,134 @@ namespace OOP4Homework
         // спрятала класс Здание внутрь класса фабрики -- не совсем уверена, что требовалось именно это, но условие поняла так, что все должно быть скрыто и недоступно извне
         private class Build
         {
-            private static int number = 1;
+            private static int count = 1;
+            private int number;
+            private double height;
+            private int floors;
+            private int apartments;
+            private int entrances;
+            private int code;
 
-            public int Number { get; set; }
 
-            public double Height { get; set; }
+            public int Number 
+            {
+                get
+                { 
+                    return number; 
+                }
+                set
+                {
+                    try // добавлена валидация
+                    {
+                        number = value;
+                        GetNumber(); // инкремент номера выведен в отдельный метод
+                    }
+                        
+                    catch
+                    {
+                        Console.WriteLine("Возникло исключение!");
+                    }
+                } 
+            }
 
-            public int Floors { get; set; }
+            public double Height
+            {
+                get
+                {
+                    return height;
+                }
+                set
+                {
+                    try // добавлена валидация
+                    {
+                        height = value;
+                    }
 
-            public int Apartments { get; set; }
+                    catch
+                    {
+                        Console.WriteLine("Возникло исключение!");
+                    }
+                }
+            }
 
-            public int Entrances { get; set; }
+            public int Floors
+            {
+                get
+                {
+                    return floors;
+                }
+                set
+                {
+                    try // добавлена валидация
+                    {
+                        floors = value;
+                    }
 
-            public int Code { get; set; }
+                    catch
+                    {
+                        Console.WriteLine("Возникло исключение!");
+                    }
+                }
+            }
+
+            public int Apartments
+            {
+                get
+                {
+                    return apartments;
+                }
+                set
+                {
+                    try // добавлена валидация
+                    {
+                        apartments = value;
+                    }
+
+                    catch
+                    {
+                        Console.WriteLine("Возникло исключение!");
+                    }
+                }
+            }
+            public int Entrances
+            {
+                get
+                {
+                    return entrances;
+                }
+                set
+                {
+                    try // добавлена валидация
+                    {
+                        entrances = value;
+                    }
+
+                    catch
+                    {
+                        Console.WriteLine("Возникло исключение!");
+                    }
+                }
+            }
+
+            public int Code
+            {
+                get
+                {
+                    return code;
+                }
+                set
+                {
+                    try // добавлена валидация
+                    {
+                        code = value;
+                    }
+
+                    catch
+                    {
+                        Console.WriteLine("Возникло исключение!");
+                    }
+                }
+            }
 
             // конструктор
 
@@ -34,21 +150,15 @@ namespace OOP4Homework
                 this.Floors = floors;
                 this.Apartments = apartments;
                 this.Entrances = entrances;
-                this.Number = number;
-                this.Code = 0;
-                ++number;
-
+                this.Number = count;
+                this.Code = base.GetHashCode();               
             }
 
-            public override int GetHashCode()
+            public void GetNumber () // инкремент номера здания
             {
-                int a = base.GetHashCode();
-                this.Code = a;
-                return a;
+                ++count;
             }
 
-
-            // высота этажа
             public double HeightFloor()
             {
                 return this.Height / this.Floors;
@@ -67,31 +177,29 @@ namespace OOP4Homework
                 int c = this.CountApartmentsInEntrance();
                 return c / this.Floors;
             }
-
-
-
-
         }
 
         // конструктор сделан приватным
         private Creator() { }
 
         // хэш-таблица для хранения объектов
-        private static HashSet<Build> hashSet = new HashSet<Build>();
+        //private static HashSet<Build> hashSet = new HashSet<Build>(); вариант с хеш-сетом
+
+        // создание хэш-таблицы
+        private static Hashtable builds = new Hashtable();
 
         // создание здания и добавление записи в хэш-таблицу
         public static void CreateBuild(double height, int floors, int apartments, int entrances)
         {
            Build build = new Build(height, floors, apartments, entrances);
-            hashSet.Add(build);          
-            
+            builds.Add(build.Code, build);                    
         }
         // печать хэш-таблицы
         public static void PrintBuilds()
         {
-            foreach(Build b in hashSet)
+            foreach(DictionaryEntry b in builds)
             {
-                Console.WriteLine($"Хэш код: {b.Code}  Номер здания: {b.Number}  Высота: {b.Height}  Количество этажей: {b.Floors} Количество квартир: {b.Apartments}  Количество подъездов: {b.Entrances} ");
+                Console.WriteLine($"Хэш код: {b.Key}  Номер здания: {(b.Value as Build).Number}  Высота: {(b.Value as Build).Height}  Количество этажей: {(b.Value as Build).Floors} Количество квартир: {(b.Value as Build).Apartments}  Количество подъездов: {(b.Value as Build).Entrances} ");
                 Console.WriteLine();
             }
         }
@@ -99,13 +207,21 @@ namespace OOP4Homework
         // удаление по уникальному номеру
         public static void DeleteBuild(int n)
         {
-
-            foreach(Build b in hashSet)
+            Object k = null;
+            foreach(DictionaryEntry b in builds)
             {
-                if(b.Number==n)
+                if((b.Value as Build).Number ==n)
                 {
-                    hashSet.Remove(b);
+                    k = b.Key;
                 }
+            }
+            if(k!=null)
+            {
+                builds.Remove(k);
+            }
+            else
+            {
+                Console.WriteLine("Здание с таким номером не найдено и не может быть удалено");
             }
 
         }
@@ -114,19 +230,15 @@ namespace OOP4Homework
 
         public static void InfoBuild(int n)
         {
-            foreach (Build b in hashSet)
+            foreach (DictionaryEntry b in builds)
             {
-                if (b.Number == n)
+                if ((b.Value as Build).Number == n)
                 {
-                    Console.WriteLine($"Высота этажа: {b.HeightFloor()}  Количество квартир в подъезде: {b.CountApartmentsInEntrance()} " +
-                $"Количество квартир на этаже: {b.CountApartmentsOnFloor()}");
+                    Console.WriteLine($"Высота этажа: {(b.Value as Build).HeightFloor()}  Количество квартир в подъезде: {(b.Value as Build).CountApartmentsInEntrance()} " +
+                $"Количество квартир на этаже: {(b.Value as Build).CountApartmentsOnFloor()}");
                 }
             }
-
         }
-
-
-
     }
 
     
